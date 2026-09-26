@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kompiro/adr-tools/config.schema.json",
+  "title": "ADR tooling config",
+  "description": "Configuration consumed by @kompiro/adr-tools. Required at the directory where adr commands are invoked (typically the repo root).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["topics", "concerns", "paths"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "idFormat": {
+      "type": "string",
+      "enum": ["date-sequence", "issue-number"],
+      "default": "date-sequence",
+      "description": "ADR id / filename convention. `date-sequence` expects `YYYYMMDD-NN-<slug>.md` (id `ADR-YYYYMMDD-NN`); `issue-number` expects `<n>-<slug>.md` (id `ADR-<n>`, no zero padding)."
+    },
+    "topics": {
+      "type": "array",
+      "description": "Controlled vocabulary for ADR `topic` field. Empty array disables vocabulary checks.",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "concerns": {
+      "type": "array",
+      "description": "Controlled vocabulary for `scope.concerns`. Empty array disables vocabulary checks.",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "paths": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adrDir", "outputs"],
+      "properties": {
+        "adrDir": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Directory containing ADR markdown files (relative to CWD)."
+        },
+        "outputs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["effective", "graph", "graphByTopic"],
+          "properties": {
+            "effective": { "type": "string", "minLength": 1 },
+            "graph": { "type": "string", "minLength": 1 },
+            "graphByTopic": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "assumptions": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Rules applied to `assumptions:` frontmatter entries.",
+      "properties": {
+        "rangePin": {
+          "type": "string",
+          "enum": ["off", "warn", "error"],
+          "default": "warn",
+          "description": "How `validate` reports an assumption that asserts a caret/tilde range down to a full major.minor.patch. `warn` prints without affecting the exit code; `error` fails validation; `off` disables the check."
+        }
+      }
+    },
+    "permalink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "description": "Opt-in support for `permalink:` frontmatter linking an ADR to a rendered structure. Enables `adr check-permalinks`.",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["krs"],
+          "description": "Resolver for a deep `#fragment` anchor a `source` may carry. `krs` resolves karasu `#krs-<view>-<id>` anchors via the optional `@karasu-tools/core` peer dependency."
+        },
+        "repoBackedHosts": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Hosts that serve repo-backed permalinks (e.g. the karasu-nest resolver, URLs of the form `…/<owner>/<repo>[/<path>][@<ref>]`). A `short` on one of these hosts is checked for `@<sha>` pinning; a non-pinned form (ref-less, branch, tag, or abbreviated SHA) is reported as a non-fatal warning recommending a full 40-hex commit SHA. Absent or empty disables the check."
+        }
+      }
+    }
+  }
+}
