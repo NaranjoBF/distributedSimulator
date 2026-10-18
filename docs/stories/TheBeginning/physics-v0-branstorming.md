@@ -13,7 +13,7 @@ After a shot chat with AI I found that this is indeed a problem and the situatio
 
 **Continuous Collision Detection (CCD)**
 
-The gist of the idea is, instead of first updating the position of the objects to their "next tick position" and then checking for collisions, we calculate the time of impact (which can be a fraction of the tick, say 0.23 dt), at that exact moment the system applies a correction of trajectory (chaning the velocity vector), and then, for the remainder of the tick (0.77 dt for the example), it calculates the distance to move the object. This is lossless but compute intensive which motivates a simplification called:
+The gist of the idea is, instead of first updating the position of the objects to their "next tick position" and then checking for collisions, we calculate the time of impact (which can be a fraction of the tick, say 0.23 dt), at that exact moment the system applies a correction of trajectory (changing the velocity vector), and then, for the remainder of the tick (0.77 dt for the example), it calculates the distance to move the object. This is lossless but compute intensive which motivates a simplification called:
 
 **Discrete Collision Detection (DCD)**
 
@@ -95,3 +95,9 @@ This analytical implementation is unnecessarily CPU hungry, a simplification lik
 Finally, because we eventually want to make this work cross-platform deterministically we have 2 choices, either we make sure we comply with IEEE-754 (using soft floats whatever that is), or we use fixed point arithmetic, we're going to use the latter because it is quite easy anyway for our simple first iteration and would make the whole thing more future proof.
 
 Fixed point arithmetic uses a big integer in which some bits represent the integer part and the rest represent the fractional part, this is totally deterministic but has disadvantages like limited world and object size due to integer overflowing, poor performance because floating point (the alternative) normally leverages FPUs (hardware), and implementation is more complex, our simple MVP doesn't need to worry about that for now though, so, see [ADR-20260926-01](../../adr/20260926-01-use-fixed-point-arithmetic.md)
+
+now another question pops up in my mind, what is the full set of data points that fully define the state of a ball?, I guess position and velocity are a minimum, but how about acceleration or force? I guess force could be an intrinsic property (e.g. in a rocket), or could be something the environment applies (e.g. gravity), how to model that?
+
+because we'll start simple with just gravity, I'll ignore intrinsic forces for now and I'll just set the gravity as part of the world state, velocity does need to be part of the ball state though, because it constantly changes as the ball moves.
+
+Regarding units, velocity and position are both pairs of x/y values, but they're not both the same units, I think units matter because conversion might be required, YAGNI though, we could use a Point struct for both, for now, but maybe Point is not the best choice of name, how about Vector? I don't love it because it overlaps with other concepts (like auto-resizing collections, e.g. rust's vec).
