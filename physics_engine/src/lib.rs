@@ -7,6 +7,20 @@ pub struct World {
     pub balls: Vec<Ball>,
 }
 
+impl World {
+    pub const GRAVITY: Vec2D = Vec2D {
+        x: Scalar::ZERO,
+        y: Scalar::from_bits((98i64 << 32) / 10),
+    };
+
+    pub fn advance_by_delta_secs(&mut self, secs: Scalar) {
+        self.balls.iter_mut().for_each(|ball| {
+            ball.velocity += secs * Self::GRAVITY;
+            ball.position += secs * ball.velocity;
+        });
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Ball {
     pub position: Vec2D,
